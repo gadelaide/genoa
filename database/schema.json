@@ -1,0 +1,64 @@
+{
+    "users": [
+        {
+            "_id": "ObjectId('60f1a2b3...')",
+            "email": "jean.dupont@famille.fr",
+            "password": "$2b$10$HashDuMotDePasseBcrypt...",
+            "role": "admin",
+            "isVerified": true
+        },
+        {
+            "_id": "ObjectId('60f1a2b4...')",
+            "email": "cousin.hubert@famille.fr",
+            "password": "$2b$10$UnAutreHash...",
+            "role": "lecteur",
+            "isVerified": false
+        }
+    ],
+    "members": [
+        {
+            "_id": "ObjectId('70a1b2c3...')",
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "sexe": "M",
+            "photo": "https://lien-vers-photo.com/jean.jpg",
+            "dateNaissance": "1960-05-14",
+            "dateDeces": null,
+            "professions": [
+                "Boulanger",
+                "Maire"
+            ],
+            "coordonnees": {
+                "adresses": [
+                    "12 rue du Pain, 75000 Paris"
+                ],
+                "telephone": "0601020304",
+                "emails": [
+                    "jean.dupont@famille.fr"
+                ]
+            },
+            "informationsComplementaires": {
+                "publique": "Adore la pétanque.",
+                "privee": "Fâché avec son frère depuis 1998."
+            },
+            "createurId": "ObjectId('60f1a2b3...')"
+        }
+    ],
+    "couples": [
+        {
+            "_id": "ObjectId('80b1c2d3...')",
+            "membre1_id": "ObjectId('70a1b2c3...')",
+            "membre2_id": "ObjectId('70a1b2c4...')",
+            "dateUnion": "1985-06-20",
+            "dateSeparation": null
+        }
+    ],
+    "enfants": [
+        {
+            "_id": "ObjectId('90c1d2e3...')",
+            "couple_id": "ObjectId('80b1c2d3...')",
+            "enfant_id": "ObjectId('70a1b2c5...')",
+            "nature": "biologique"
+        }
+    ]
+}
