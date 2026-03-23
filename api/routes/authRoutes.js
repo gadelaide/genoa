@@ -28,6 +28,18 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ message: "Email déjà existant" });
     }
 
+    // vérifier le format du mail
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Format de mail invalide" });
+    }
+
+    // vérifier le format du mot de passe: au moins 6 caractères
+    const passwordRegex = /^.{6,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({ message: "Le mot de passe doit contenir au moins 6 caractères" });
+    }
+
     // hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
