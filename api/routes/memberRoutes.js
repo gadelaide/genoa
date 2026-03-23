@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middlewares/auth');
+const { authenticateToken, requireEditor, requireAdmin } = require('../middlewares/auth');
 
 // GET /api/members : lister les membres
 router.get('/', authenticateToken, (req, res) => {
@@ -12,7 +12,7 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // POST /api/members : ajouter un membre
-router.post('/', authenticateToken, (req, res) => {
+router.post('/', authenticateToken, requireEditor, (req, res) => {
     // TODO: Vérifier que l'utilisateur a le droit "Éditeur" ou "Admin"
     // TODO: Valider les données reçues (Nom, prénom, etc.)
     // TODO: Insérer le membre dans MongoDB

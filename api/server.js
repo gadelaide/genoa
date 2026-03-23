@@ -6,6 +6,7 @@ const dbObject = require('./config/db');
 // importations des routes
 const authRoutes = require('./routes/authRoutes');
 const memberRoutes = require('./routes/memberRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
