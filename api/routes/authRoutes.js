@@ -3,12 +3,27 @@
 const express = require('express');
 const router = express.Router();
 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const dbObject = require('../config/db');
+
+// utilitaire pour récupérer la collection users
+function getUsersCollection() {
+    const db = dbObject.getDb();
+    if (!db) {
+        throw new Error("Base de données non initialisée. Appelez connectToServer d'abord.");
+    }
+    return db.collection('users');
+}
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
+    const users = await getUsersCollection();
+
     // vérifier si email disponible
-    const existingUser = await User.findOne({ email });
+    const existingUser = await users.findOne({ email });
     if (existingUser) {
         return res.status(400).json({ message: "Email déjà existant" });
     }
@@ -17,17 +32,17 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // vérifier si c'est le premier utilisateur
-    const isFirstUser = (await User.countDocuments() === 0);
+    const isFirstUser = (await users.countDocuments() === 0);
 
     // créer l'utilisateur
-    const newUser = new User({
+    const newUser = {
         email,
         password: hashedPassword,
         role: isFirstUser ? "admin" : "lecteur",
         isVerified: isFirstUser //le premier compte est le seul qui n'a pas besoin de validation
-    });
+    };
 
-    await newUser.save();
+    await users.insertOne(newUser);
 
     res.status(201).json({
         message: "Utilisateur créé",
@@ -40,8 +55,10 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
+    const users = await getUsersCollection();
+
     // vérifier si l'utilisateur existe
-    const user = await User.findOne({ email });
+    const user = await users.findOne({ email });
     if (!user) {
         return res.status(400).json({ message: "Utilisateur introuvable" });
     }
