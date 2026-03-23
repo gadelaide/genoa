@@ -9,9 +9,9 @@ Répartition des fonctionnalités:
 
 1. Inscription et authentification : Gabriel
 2. Gestion des utilisateurs : Gabriel
-3. Gestion des membres : ???
+3. Gestion des membres : Gabriel
 4. Gestion des relations : Eya
-5. Visualisation de l'arbre : ???
-6. Recherche et navigation : ???
-7. Statistiques familiales : ???
-8. Gestion des droits et confidentialité : ???
+5. Visualisation de l'arbre : Eya
+6. Recherche et navigation : Eya
+7. Statistiques familiales : Eya
+8. Gestion des droits et confidentialité : Gabriel 
