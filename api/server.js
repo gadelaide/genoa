@@ -16,7 +16,7 @@ app.use(express.json());
 
 // route racine pour vérifier que l'API tourne
 app.get('/', (req, res) => {
-    res.send("🌳 Bienvenue sur l'API Genoa !");
+    res.send("🌳 Bienvenue sur l'API Genoa ! \n");
 });
 
 // lancement de mongo puis de l'api
