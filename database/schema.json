@@ -11,8 +11,15 @@
             "_id": "ObjectId('60f1a2b4...')",
             "email": "cousin.hubert@famille.fr",
             "password": "$2b$10$UnAutreHash...",
-            "role": "lecteur",
+            "role": "editeur",
             "isVerified": false
+        },
+        {
+            "_id": "ObjectId('60f1a2b6...')",
+            "email": "paul.dupont@famille.fr",
+            "password": "$2b$10$EncoreUnHash...",
+            "role": "lecteur",
+            "isVerified": true
         }
     ],
     "members": [
@@ -50,7 +57,8 @@
             "membre1_id": "ObjectId('70a1b2c3...')",
             "membre2_id": "ObjectId('70a1b2c4...')",
             "dateUnion": "1985-06-20",
-            "dateSeparation": null
+            "dateSeparation": null,
+            "createurId": "ObjectId(...)"
         }
     ],
     "enfants": [
@@ -58,7 +66,8 @@
             "_id": "ObjectId('90c1d2e3...')",
             "couple_id": "ObjectId('80b1c2d3...')",
             "enfant_id": "ObjectId('70a1b2c5...')",
-            "nature": "biologique"
+            "nature": "biologique",
+            "createurId": "ObjectId(...)"
         }
     ]
 }

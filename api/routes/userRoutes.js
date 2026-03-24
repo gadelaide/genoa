@@ -23,7 +23,7 @@ router.post('/', authenticateToken, requireAdmin, (req, res) => {
 
 });
 
-// PUT /api/users/:id : valider une inscirption ou partager les droits d'administration ou modifier un compte utilisateur
+// PUT /api/users/:id : valider une inscription ou partager les droits d'administration ou modifier un compte utilisateur
 router.put('/:id', authenticateToken, requireAdmin, (req, res) => {
     // TODO: Récupérer l'ID dans req.params.id
     // TODO: Récupérer les nouvelles données dans req.body (ex: { isVerified: true } ou { role: "admin" })

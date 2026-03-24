@@ -19,13 +19,17 @@ function getUsersCollection() {
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email et mot de passe obligatoires" });
+    }
 
     const users = await getUsersCollection();
 
     // vérifier si email disponible
     const existingUser = await users.findOne({ email });
     if (existingUser) {
-        return res.status(400).json({ message: "Email déjà existant" });
+        return res.status(400).json({ message: "Email déjà existant! Veuillez vous connecter directement." });
     }
 
     // vérifier le format du mail
@@ -72,7 +76,7 @@ router.post('/login', async (req, res) => {
     // vérifier si l'utilisateur existe
     const user = await users.findOne({ email });
     if (!user) {
-        return res.status(400).json({ message: "Utilisateur introuvable" });
+        return res.status(400).json({ message: "Utilisateur introuvable! Inscrivez-vous d'abord." });
     }
 
     // vérifier le mot de passe
