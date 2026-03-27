@@ -22,7 +22,7 @@ function getUsersCollection() {
 router.post('/register', async (req, res) => {
     try {
         // verifier si premier utilisateur
-        const users = await getDb().collection('users');
+        const users = await getUsersCollection();
         const isFirstUser = (await users.countDocuments() === 0);
 
         const newUser = await createUser({
