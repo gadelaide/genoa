@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dbObject = require('../config/db');
 
+const { createUser } = require('../services/userService');
+
 // utilitaire pour récupérer la collection users
 function getUsersCollection() {
     const db = dbObject.getDb();
@@ -18,53 +20,26 @@ function getUsersCollection() {
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-        return res.status(400).json({ message: "Email et mot de passe obligatoires" });
+    try {
+        // verifier si premier utilisateur
+        const users = await getDb().collection('users');
+        const isFirstUser = (await users.countDocuments() === 0);
+
+        const newUser = await createUser({
+            email: req.body.email,
+            password: req.body.password,
+            role: isFirstUser ? 'admin' : 'lecteur',
+            autoVerify: isFirstUser
+        });
+
+        res.status(201).json({
+            message: 'Utilisateur créé',
+            email: newUser.email,
+            role: newUser.role
+        });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
     }
-
-    const users = await getUsersCollection();
-
-    // vérifier si email disponible
-    const existingUser = await users.findOne({ email });
-    if (existingUser) {
-        return res.status(400).json({ message: "Email déjà existant! Veuillez vous connecter directement." });
-    }
-
-    // vérifier le format du mail
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ message: "Format de mail invalide" });
-    }
-
-    // vérifier le format du mot de passe: au moins 6 caractères
-    const passwordRegex = /^.{6,}$/;
-    if (!passwordRegex.test(password)) {
-        return res.status(400).json({ message: "Le mot de passe doit contenir au moins 6 caractères" });
-    }
-
-    // hasher le mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // vérifier si c'est le premier utilisateur
-    const isFirstUser = (await users.countDocuments() === 0);
-
-    // créer l'utilisateur
-    const newUser = {
-        email,
-        password: hashedPassword,
-        role: isFirstUser ? "admin" : "lecteur",
-        isVerified: isFirstUser //le premier compte est le seul qui n'a pas besoin de validation
-    };
-
-    await users.insertOne(newUser);
-
-    res.status(201).json({
-        message: "Utilisateur créé",
-        email: newUser.email,
-        role: newUser.role
-    });
 });
 
 // POST /api/auth/login
