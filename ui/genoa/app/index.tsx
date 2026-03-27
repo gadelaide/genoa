@@ -1,7 +1,9 @@
-import { Text, View, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Text, View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { getToken, deleteToken } from "../services/auth";
+import { styles } from "../styles/index.styles";
+import { Colors } from "../constants/Colors";
 
 export default function Index() {
   const router = useRouter();
@@ -13,7 +15,7 @@ export default function Index() {
 
   const checkLogin = async () => {
     const token = await getToken();
-    setIsLoggedIn(!!token);
+    setIsLoggedIn(!!token); //double négation pour convertir en boolean
   };
 
   const handleLogout = async () => {
@@ -24,7 +26,7 @@ export default function Index() {
   if (isLoggedIn === null) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#1b4d3e" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -33,30 +35,30 @@ export default function Index() {
     <View style={styles.container}>
       <Text style={styles.title}>Genoa</Text>
       <Text style={styles.subtitle}>
-        {isLoggedIn 
-          ? "Bienvenue dans votre généalogie" 
+        {isLoggedIn
+          ? "Bienvenue dans votre généalogie"
           : "L'application de gestion généalogique"}
       </Text>
-      
+
       <View style={styles.buttonContainer}>
         {isLoggedIn ? (
-          <TouchableOpacity 
-            style={[styles.button, styles.secondaryButton]} 
+          <TouchableOpacity
+            style={[styles.button, styles.secondaryButton]}
             onPress={handleLogout}
           >
             <Text style={[styles.buttonText, styles.secondaryButtonText]}>Se déconnecter</Text>
           </TouchableOpacity>
         ) : (
           <>
-            <TouchableOpacity 
-              style={styles.button} 
+            <TouchableOpacity
+              style={styles.button}
               onPress={() => router.push('/login')}
             >
               <Text style={styles.buttonText}>Se connecter</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.button, styles.secondaryButton]} 
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
               onPress={() => router.push('/register')}
             >
               <Text style={[styles.buttonText, styles.secondaryButtonText]}>S'inscrire</Text>
@@ -67,49 +69,3 @@ export default function Index() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7fdf9',
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1b4d3e',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#4f796a',
-    marginBottom: 50,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    width: '100%',
-    gap: 15,
-  },
-  button: {
-    height: 55,
-    backgroundColor: '#1b4d3e',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#1b4d3e',
-  },
-  secondaryButtonText: {
-    color: '#1b4d3e',
-  },
-});

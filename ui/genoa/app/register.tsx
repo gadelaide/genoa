@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { styles } from '../styles/register.styles';
+import { Colors } from '../constants/Colors';
 
 import { API_BASE_URL } from '../config';
 
@@ -29,7 +31,7 @@ export default function RegisterScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert('Succès', 'Compte créé avec succès ! Connectez-vous maintenant.');
+        Alert.alert('Succès', 'Compte créé avec succès ! Attendez la validation d\'un administrateur.');
         router.push('/login');
       } else {
         Alert.alert('Erreur', data.message || data.error || 'Une erreur est survenue');
@@ -64,13 +66,13 @@ export default function RegisterScreen() {
           secureTextEntry
         />
 
-        <TouchableOpacity 
-          style={styles.button} 
+        <TouchableOpacity
+          style={styles.button}
           onPress={handleRegister}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={Colors.white} />
           ) : (
             <Text style={styles.buttonText}>S'inscrire</Text>
           )}
@@ -83,63 +85,3 @@ export default function RegisterScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7fdf9', // Vert pâle
-    padding: 20,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#1b4d3e', // Vert foncé
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#4f796a',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  form: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    backgroundColor: '#fafafa',
-  },
-  button: {
-    height: 50,
-    backgroundColor: '#1b4d3e',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  linkText: {
-    color: '#1b4d3e',
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-  },
-});

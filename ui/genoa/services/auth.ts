@@ -2,9 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const TOKEN_KEY = 'genoa_auth_token';
 
-/**
- * Sauvegarder le jeton JWT
- */
+// sauvegarde du token
 export async function saveToken(token: string) {
   try {
     await SecureStore.setItemAsync(TOKEN_KEY, token);
@@ -13,9 +11,7 @@ export async function saveToken(token: string) {
   }
 }
 
-/**
- * Récupérer le jeton JWT
- */
+// récupérer le token
 export async function getToken() {
   try {
     return await SecureStore.getItemAsync(TOKEN_KEY);
@@ -25,9 +21,7 @@ export async function getToken() {
   }
 }
 
-/**
- * Supprimer le jeton JWT (Déconnexion)
- */
+// supprimer du token
 export async function deleteToken() {
   try {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
