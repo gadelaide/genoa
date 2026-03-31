@@ -26,6 +26,7 @@ dbObject.connectToServer()
         // branchement des routes
         app.use('/api/auth', authRoutes);
         app.use('/api/members', memberRoutes);
+        app.use('/api/users', userRoutes);
 
         // lancement du serveur
         app.listen(PORT, () => {

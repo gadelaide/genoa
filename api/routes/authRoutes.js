@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
         { expiresIn: "24h" }
     );
 
-    res.json({ token });
+    res.json({ token, role: user.role });
 });
 
 module.exports = router;

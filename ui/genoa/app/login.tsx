@@ -33,6 +33,9 @@ export default function LoginScreen() {
 
       if (response.ok) {
         await saveToken(data.token);
+        if (data.role) {
+          await import('../services/auth').then(m => m.saveRole(data.role));
+        }
         Alert.alert('Succès', 'Connexion réussie !');
         router.push('/'); // Rediriger vers l'accueil
       } else {

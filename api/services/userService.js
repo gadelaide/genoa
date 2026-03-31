@@ -14,7 +14,7 @@ function passwordFormat(password) {
 }
 
 function roleFormat(role) {
-    return ['lecteur', 'admin'].includes(role);
+    return ['lecteur', 'editeur', 'admin'].includes(role);
 }
 
 async function createUser({ email, password, role = 'lecteur', autoVerify = false }) {
