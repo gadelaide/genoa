@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveToken } from '../services/auth';
-import { styles } from '../styles/login.styles';
-import { Colors } from '../constants/Colors';
+import { globalStyles as styles } from '../styles/global.styles';
 
 import { API_BASE_URL } from '../config';
 
@@ -85,7 +84,7 @@ export default function LoginScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.white} />
+            <ActivityIndicator color={styles.button.backgroundColor} />
           ) : (
             <Text style={styles.buttonText}>Se connecter</Text>
           )}

@@ -13,7 +13,7 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { getRole, getToken } from "../../services/auth";
 import { API_BASE_URL } from "../../config";
-import { Colors } from "../../constants/Colors";
+import { globalStyles as styles } from '../../styles/global.styles';
 
 interface Member {
   _id: string;
@@ -146,7 +146,7 @@ export default function MemberDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={styles.button.backgroundColor} />
       </View>
     );
   }
@@ -233,74 +233,3 @@ export default function MemberDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  content: {
-    padding: 20,
-    paddingTop: 40,
-    paddingBottom: 40,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.background,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: 20,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: 10,
-  },
-  info: {
-    fontSize: 15,
-    color: Colors.secondary,
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  actionsContainer: {
-    marginTop: 10,
-    gap: 12,
-  },
-  editButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  deleteButton: {
-    backgroundColor: Colors.error,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 16,
-  },
-});

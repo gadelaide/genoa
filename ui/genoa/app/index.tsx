@@ -2,8 +2,7 @@ import React, { useCallback, useState } from "react";
 import { Text, View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getToken, deleteToken, getRole, deleteRole } from "../services/auth";
-import { styles } from "../styles/index.styles";
-import { Colors } from "../constants/Colors";
+import { globalStyles as styles } from '../styles/global.styles';
 
 export default function Index() {
   const router = useRouter();
@@ -33,7 +32,7 @@ export default function Index() {
   if (isLoggedIn === null) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={styles.button.backgroundColor} />
       </View>
     );
   }

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput , Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getToken } from '../../services/auth';
 import { API_BASE_URL } from '../../config';
-import { Colors } from '../../constants/Colors';
-import { styles } from '../../styles/admin.users.styles';
+import { globalStyles as styles } from '../../styles/global.styles';
 
 interface User {
   _id: string;
@@ -87,31 +86,49 @@ export default function AdminUsersScreen() {
     }
   };
 
+  const confirmAndDeleteUser = async (userId: string) => {
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setUsers(users.filter(u => u._id !== userId));
+        Alert.alert('Succès', 'Utilisateur supprimé');
+      } else {
+        const data = await res.json();
+        Alert.alert('Erreur', data.error || data.message || 'Erreur lors de la suppression');
+      }
+    } catch (err) {
+      Alert.alert('Erreur', 'Impossible de contacter le serveur');
+    }
+  };
+
   const deleteUser = async (userId: string) => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        'Voulez-vous vraiment supprimer cet utilisateur ?'
+      );
+
+      if (confirmed) {
+        await confirmAndDeleteUser(userId);
+      }
+      return;
+    }
+
     Alert.alert('Confirmation', 'Voulez-vous vraiment supprimer cet utilisateur ?', [
       { text: 'Annuler', style: 'cancel' },
       {
-        text: 'Supprimer', style: 'destructive', onPress: async () => {
-          try {
-            const token = await getToken();
-            const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
-              method: 'DELETE',
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-              setUsers(users.filter(u => u._id !== userId));
-              Alert.alert('Succès', 'Utilisateur supprimé');
-            } else {
-              Alert.alert('Erreur', 'Erreur lors de la suppression');
-            }
-          } catch (err) {
-            Alert.alert('Erreur', 'Impossible de contacter le serveur');
-          }
+        text: 'Supprimer',
+        style: 'destructive',
+        onPress: () => {
+          confirmAndDeleteUser(userId);
         }
       }
     ]);
   };
-
   const openCreateModal = () => {
     setModalMode('create');
     setEditEmail('');
@@ -252,7 +269,7 @@ export default function AdminUsersScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={styles.button.backgroundColor} />
       </View>
     );
   }

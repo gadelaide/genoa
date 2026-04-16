@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { getToken } from "../../services/auth";
 import { API_BASE_URL } from "../../config";
-import { Colors } from "../../constants/Colors";
+import { globalStyles as styles } from '../../styles/global.styles';
 
 export default function CreateMemberScreen() {
   const router = useRouter();
@@ -185,7 +185,7 @@ export default function CreateMemberScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.white} />
+            <ActivityIndicator color={styles.button.backgroundColor} />
           ) : (
             <Text style={styles.buttonText}>Créer le membre</Text>
           )}
@@ -195,55 +195,3 @@ export default function CreateMemberScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  content: {
-    padding: 20,
-    paddingTop: 40,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: 20,
-  },
-  form: {
-    backgroundColor: Colors.white,
-    borderRadius: 14,
-    padding: 18,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 14,
-    fontSize: 16,
-    backgroundColor: Colors.inputBackground || "#fff",
-  },
-  textArea: {
-    minHeight: 90,
-    textAlignVertical: "top",
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonText: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});

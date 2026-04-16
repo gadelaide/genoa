@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { styles } from '../styles/register.styles';
-import { Colors } from '../constants/Colors';
+import { globalStyles as styles } from '../styles/global.styles';
 
 import { API_BASE_URL } from '../config';
 
@@ -73,17 +72,13 @@ export default function RegisterScreen() {
           <Text style={styles.errorText}>{errorMessage}</Text>
         ) : null}
 
-        {successMessage ? (
-          <Text style={styles.successText}>{successMessage}</Text>
-        ) : null}
-
         <TouchableOpacity
           style={styles.button}
           onPress={handleRegister}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.white} />
+            <ActivityIndicator color={styles.button.backgroundColor} />
           ) : (
             <Text style={styles.buttonText}>S'inscrire</Text>
           )}

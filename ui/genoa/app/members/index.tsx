@@ -12,7 +12,7 @@ import {
 import { useRouter } from "expo-router";
 import { getToken, getRole } from "../../services/auth";
 import { API_BASE_URL } from "../../config";
-import { Colors } from "../../constants/Colors";
+import { globalStyles as styles } from '../../styles/global.styles';
 
 interface Member {
   _id: string;
@@ -91,7 +91,7 @@ export default function MembersScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={styles.button.backgroundColor} />
       </View>
     );
   }
@@ -127,65 +127,3 @@ export default function MembersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    padding: 20,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    marginTop: 40,
-    marginBottom: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: Colors.primary,
-    flex: 1,
-    marginRight: 10,
-  },
-  addButton: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-  },
-  card: {
-    backgroundColor: Colors.white,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: 6,
-  },
-  info: {
-    fontSize: 14,
-    color: Colors.secondary,
-    marginBottom: 2,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: Colors.secondary,
-  },
-});
