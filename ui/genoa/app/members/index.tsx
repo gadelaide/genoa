@@ -125,6 +125,12 @@ export default function MembersScreen() {
         >
           <Text style={styles.addButtonText}>+ Enfant</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => router.push('/members/stats')}
+        >
+          <Text style={styles.addButtonText}>Stats</Text>
+        </TouchableOpacity>
       </View>
 
       {members.length === 0 ? (

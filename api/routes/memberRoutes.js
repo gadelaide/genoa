@@ -39,6 +39,65 @@ router.get('/search', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+// GET /api/members/stats
+router.get('/stats', authenticateToken, async (req, res) => {
+    try {
+        const db = getDb();
+
+        const members = await db.collection('members').find({}).toArray();
+        const couples = await db.collection('couples').find({}).toArray();
+        const enfantsLinks = await db.collection('enfants').find({}).toArray();
+
+        const totalMembers = members.length;
+
+        const totalHommes = members.filter(m => m.sexe === 'M').length;
+        const totalFemmes = members.filter(m => m.sexe === 'F').length;
+
+        // espérance de vie moyenne : seulement membres avec naissance + décès
+        const lifespans = members
+            .filter(m => m.dateNaissance && m.dateDeces)
+            .map(m => {
+                const birth = new Date(m.dateNaissance);
+                const death = new Date(m.dateDeces);
+                const years = (death - birth) / (1000 * 60 * 60 * 24 * 365.25);
+                return years;
+            })
+            .filter(v => !isNaN(v) && v >= 0);
+
+        const moyenneEsperanceVie = lifespans.length
+            ? Number((lifespans.reduce((a, b) => a + b, 0) / lifespans.length).toFixed(1))
+            : 0;
+
+        // moyenne d'enfants par couple
+        const moyenneEnfantsParCouple = couples.length
+            ? Number((enfantsLinks.length / couples.length).toFixed(1))
+            : 0;
+
+        // nombre de générations (approx simple par dates de naissance)
+        const birthYears = members
+            .filter(m => m.dateNaissance)
+            .map(m => new Date(m.dateNaissance).getFullYear())
+            .filter(y => !isNaN(y));
+
+        let nombreGenerations = 0;
+        if (birthYears.length > 0) {
+            const minYear = Math.min(...birthYears);
+            const maxYear = Math.max(...birthYears);
+            nombreGenerations = Math.max(1, Math.ceil((maxYear - minYear + 1) / 25));
+        }
+
+        res.json({
+            totalMembers,
+            totalHommes,
+            totalFemmes,
+            moyenneEsperanceVie,
+            moyenneEnfantsParCouple,
+            nombreGenerations
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // POST /api/members : ajouter un membre
 router.post('/', authenticateToken, requireEditor, async (req, res) => {
@@ -367,6 +426,7 @@ router.get('/:id/relations', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 
 
