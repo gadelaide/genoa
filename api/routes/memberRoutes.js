@@ -12,6 +12,33 @@ const { authenticateToken, requireEditor } = require('../middlewares/auth');
 //CREATE / UPDATE / DELETE → éditeur
 //READ → connecté seulement
 
+ 
+// GET /api/members/search?q=texte (on le met avant get /api/members/:id pour ne pas confondre search... comme un id)
+router.get('/search', authenticateToken, async (req, res) => {
+    try {
+        const db = getDb();
+        const q = (req.query.q || '').trim();
+
+        if (!q) {
+            return res.json([]);
+        }
+
+        const regex = new RegExp(q, 'i');
+
+        const members = await db.collection('members').find({
+            $or: [
+                { nom: regex },
+                { prenom: regex }
+            ]
+        }).toArray();
+
+        res.json(members);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // POST /api/members : ajouter un membre
 router.post('/', authenticateToken, requireEditor, async (req, res) => {
@@ -340,5 +367,7 @@ router.get('/:id/relations', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
 
 module.exports = router;

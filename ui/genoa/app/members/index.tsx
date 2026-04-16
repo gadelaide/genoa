@@ -101,6 +101,12 @@ export default function MembersScreen() {
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <TouchableOpacity
           style={styles.addButton}
+          onPress={() => router.push('/members/search')}
+        >
+          <Text style={styles.addButtonText}>Recherche</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.addButton}
           onPress={() => router.push('/members/create')}
         >
           <Text style={styles.addButtonText}>+ Membre</Text>

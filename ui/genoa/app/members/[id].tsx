@@ -222,26 +222,54 @@ export default function MemberDetailScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Relations familiales</Text>
 
-        <Text style={styles.info}>
-          Parents :{' '}
-          {relations?.parents?.length
-            ? relations.parents.map((p) => `${p.prenom} ${p.nom}`).join(', ')
-            : 'Aucun'}
-        </Text>
+        <Text style={styles.sectionTitle}>Parents :</Text>
+        {relations?.parents?.length ? (
+          relations.parents.map((p) => (
+            <TouchableOpacity
+              key={p._id}
+              onPress={() => router.push(`/members/${p._id}`)}
+            >
+              <Text style={[styles.info, styles.linkText]}>
+                {p.prenom} {p.nom}
+              </Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.info}>Aucun</Text>
+        )}
+        
+        <Text style={styles.sectionTitle}>Conjoints :</Text>
+        {relations?.conjoints?.length ? (
+          relations.conjoints.map((c) => (
+            <TouchableOpacity
+              key={c._id}
+              onPress={() => router.push(`/members/${c._id}`)}
+            >
+              <Text style={[styles.info, styles.linkText]}>
+                {c.prenom} {c.nom}
+              </Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.info}>Aucun</Text>
+        )}
 
-        <Text style={styles.info}>
-          Conjoints :{' '}
-          {relations?.conjoints?.length
-            ? relations.conjoints.map((c) => `${c.prenom} ${c.nom}`).join(', ')
-            : 'Aucun'}
-        </Text>
 
-        <Text style={styles.info}>
-          Enfants :{' '}
-          {relations?.enfants?.length
-            ? relations.enfants.map((e) => `${e.prenom} ${e.nom}`).join(', ')
-            : 'Aucun'}
-        </Text>
+        <Text style={styles.sectionTitle}>Enfants :</Text>
+        {relations?.enfants?.length ? (
+          relations.enfants.map((e) => (
+            <TouchableOpacity
+              key={e._id}
+              onPress={() => router.push(`/members/${e._id}`)}
+            >
+              <Text style={[styles.info, styles.linkText]}>
+                {e.prenom} {e.nom}
+              </Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.info}>Aucun</Text>
+        )}
       </View>
 
       <View style={styles.card}>
