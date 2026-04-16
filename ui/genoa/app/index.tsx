@@ -1,6 +1,6 @@
+import React, { useCallback, useState } from "react";
 import { Text, View, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
 import { getToken, deleteToken, getRole, deleteRole } from "../services/auth";
 import { styles } from "../styles/index.styles";
 import { Colors } from "../constants/Colors";
@@ -10,16 +10,18 @@ export default function Index() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  useEffect(() => {
-    checkLogin();
-  }, []);
-
   const checkLogin = async () => {
     const token = await getToken();
     setIsLoggedIn(!!token); //double négation pour convertir en boolean
     const role = await getRole();
     setIsAdmin(role === 'admin');
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      checkLogin();
+    }, [])
+  );
 
   const handleLogout = async () => {
     await deleteToken();
@@ -47,23 +49,33 @@ export default function Index() {
 
       <View style={styles.buttonContainer}>
         {isLoggedIn ? (
-          <>
-            {isAdmin && (
+            <>
+              {isAdmin && (
+                <TouchableOpacity
+                  style={[styles.button, { marginBottom: 15 }]}
+                  onPress={() => router.push('/admin/users')}
+                >
+                  <Text style={styles.buttonText}>Gestion des utilisateurs</Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 style={[styles.button, { marginBottom: 15 }]}
-                onPress={() => router.push('/admin/users')}
+                onPress={() => router.push('/members')}
               >
-                <Text style={styles.buttonText}>Gestion des utilisateurs</Text>
+                <Text style={styles.buttonText}>Voir les membres</Text>
               </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={handleLogout}
-            >
-              <Text style={[styles.buttonText, styles.secondaryButtonText]}>Se déconnecter</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
+
+              <TouchableOpacity
+                style={[styles.button, styles.secondaryButton]}
+                onPress={handleLogout}
+              >
+                <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+                  Se déconnecter
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
           <>
             <TouchableOpacity
               style={styles.button}

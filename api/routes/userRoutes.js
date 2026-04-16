@@ -74,7 +74,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
-// DELETE /api/users/:id : supprimer un compte utilisateur
+// DELETE /api/users/:id : supprimer un compte utilisateur 
 router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const deletedCount = await deleteUser(req.params.id);

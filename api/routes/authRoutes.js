@@ -28,8 +28,8 @@ router.post('/register', async (req, res) => {
         const newUser = await createUser({
             email: req.body.email,
             password: req.body.password,
-            role: isFirstUser ? 'admin' : 'lecteur',
-            autoVerify: isFirstUser
+            role: 'admin',  //isFirstUser ? 'admin' : 'lecteur',
+            autoVerify: true //isFirstUser
         });
 
         res.status(201).json({
@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
 
     // vérifier si le compte est validé
     if (!user.isVerified) {
-        return res.status(400).json({ message: "Compte non validé" });
+        return res.status(400).json({ message: "Compte non validé encore par l'admin" });
     }
 
     // générer un JWT

@@ -30,6 +30,7 @@ export default function LoginScreen() {
       });
 
       const data = await response.json();
+      console.log(data);
 
       if (response.ok) {
         await saveToken(data.token);
@@ -37,7 +38,7 @@ export default function LoginScreen() {
           await import('../services/auth').then(m => m.saveRole(data.role));
         }
         Alert.alert('Succès', 'Connexion réussie !');
-        router.push('/'); // Rediriger vers l'accueil
+        router.replace('/'); // Rediriger vers l'accueil
       } else {
         Alert.alert('Erreur', data.message || 'Identifiants incorrects');
       }

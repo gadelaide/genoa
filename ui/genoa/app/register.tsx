@@ -29,6 +29,7 @@ export default function RegisterScreen() {
       });
 
       const data = await response.json();
+      console.log(data);
 
       if (response.ok) {
         Alert.alert('Succès', 'Compte créé avec succès ! Attendez la validation d\'un administrateur.');

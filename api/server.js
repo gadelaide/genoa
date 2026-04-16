@@ -1,5 +1,7 @@
 require('dotenv').config(); // charge le .env
 const express = require('express');
+const cors = require('cors');
+
 
 const dbObject = require('./config/db');
 
@@ -12,6 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // middlewares globaux
+app.use(cors());
 app.use(express.json());
 
 // route racine pour vérifier que l'API tourne
@@ -29,7 +32,7 @@ dbObject.connectToServer()
         app.use('/api/users', userRoutes);
 
         // lancement du serveur
-        app.listen(PORT, () => {
+        app.listen(PORT,'0.0.0.0',() => {
             console.log(`Serveur Genoa en écoute sur http://localhost:${PORT}`);
         });
 
@@ -38,3 +41,8 @@ dbObject.connectToServer()
         console.error("Erreur de connexion MongoDB :", err);
         process.exit(1);
     });
+
+
+
+
+

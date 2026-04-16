@@ -26,10 +26,10 @@ async function createUser({ email, password, role = 'lecteur', autoVerify = fals
     const db = getDb();
     const existingUser = await db.collection('users').findOne({ email });
     if (existingUser) {
-        throw new Error('Email déjà existant');
+        throw new Error('Email déjà existant! Veuillez vous connecter directement.');
     }
 
-    // verifier formet de email 
+    // verifier format de l'email 
     if (!emailFormat(email)) {
         throw new Error('Format de mail invalide');
     }
@@ -81,6 +81,11 @@ async function updateUser(userId, updates) {
         throw new Error('Rôle invalide');
     }
 
+    //vérifier format isverified 
+    if (updates.isVerified !== undefined && typeof updates.isVerified !== "boolean") {
+        throw new Error("isVerified doit être un booléen");
+    }
+    
     const result = await db.collection('users').updateOne(
         { _id: new ObjectId(userId) },
         { $set: updates }
