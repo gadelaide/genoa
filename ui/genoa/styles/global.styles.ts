@@ -181,17 +181,26 @@ export const globalStyles = StyleSheet.create({
   },
 
   deleteButton: {
-    backgroundColor: '#ffebee',
-  },
-
-  deleteButtonText: {
-    color: '#c62828',
+    backgroundColor: '#d9534f',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
 
   buttonText: {
     color: Colors.white,
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
+},
+
+  deleteButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 
   largeButtonText: {
@@ -276,10 +285,9 @@ export const globalStyles = StyleSheet.create({
   },
 
   actionsContainer: {
-    marginTop: 12,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    marginTop: 10,
+    gap: 12,
+    width: '100%',
   },
 
   actionsWrapContainer: {

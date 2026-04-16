@@ -161,7 +161,7 @@ export default function EditMemberScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={styles.button.backgroundColor} />
       </View>
     );
   }

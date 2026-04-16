@@ -98,17 +98,27 @@ export default function MembersScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Membres de la famille</Text>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => router.push('/members/create')}
+        >
+          <Text style={styles.addButtonText}>+ Membre</Text>
+        </TouchableOpacity>
 
-        {(role === "admin" || role === "editeur") && (
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => router.push("/members/create")}
-          >
-            <Text style={styles.addButtonText}>+ Ajouter</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => router.push('/members/couple')}
+        >
+          <Text style={styles.addButtonText}>+ Couple</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => router.push('/members/enfant')}
+        >
+          <Text style={styles.addButtonText}>+ Enfant</Text>
+        </TouchableOpacity>
       </View>
 
       {members.length === 0 ? (

@@ -25,6 +25,8 @@ export default function AdminUsersScreen() {
   const [editEmail, setEditEmail] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editRole, setEditRole] = useState('lecteur');
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   useEffect(() => {
     fetchUsers();
@@ -146,8 +148,14 @@ export default function AdminUsersScreen() {
   };
 
   const saveUserModal = async () => {
+    setErrorMessage('');
     if (!editEmail) {
-      Alert.alert('Erreur', 'Email requis');
+      setErrorMessage('Email requis');
+      return;
+    }
+
+    if (modalMode === 'create' && !editPassword) {
+      setErrorMessage('Mot de passe requis');
       return;
     }
 
@@ -176,7 +184,7 @@ export default function AdminUsersScreen() {
           Alert.alert('Succès', 'Utilisateur tiers créé avec succès (auto-validé).');
         } else {
           const errData = await res.json();
-          Alert.alert('Erreur', errData.error || 'Erreur lors de la création');
+          setErrorMessage(errData.error || errData.message || 'Erreur lors de la création');
         }
       } else {
         // edit mode
@@ -195,7 +203,7 @@ export default function AdminUsersScreen() {
           Alert.alert('Succès', 'Utilisateur mis à jour.');
         } else {
           const errData = await res.json();
-          Alert.alert('Erreur', errData.error || 'Erreur lors de la mise à jour');
+          setErrorMessage(errData.error || errData.message || 'Erreur lors de la mise à jour');
         }
       }
     } catch (err) {
@@ -308,6 +316,7 @@ export default function AdminUsersScreen() {
             <Text style={styles.modalTitle}>
               {modalMode === 'create' ? 'Créer un tiers' : 'Modifier utilisateur'}
             </Text>
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
             <TextInput
               style={styles.input}

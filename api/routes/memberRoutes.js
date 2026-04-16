@@ -256,6 +256,89 @@ router.post('/enfants', authenticateToken, requireEditor, async (req, res) => {
     }
 });
 
+// GET /api/members/:id/relations : récupérer les relations d'un membre
+router.get('/:id/relations', authenticateToken, async (req, res) => {
+    try {
+        const db = getDb();
 
+        if (!ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ error: 'ID invalide' });
+        }
+
+        const memberId = new ObjectId(req.params.id);
+
+        const member = await db.collection('members').findOne({ _id: memberId });
+        if (!member) {
+            return res.status(404).json({ error: 'Membre introuvable' });
+        }
+
+        // 1) Couples où le membre apparaît
+        const couples = await db.collection('couples').find({
+            $or: [
+                { membre1_id: memberId },
+                { membre2_id: memberId }
+            ]
+        }).toArray();
+
+        // 2) Conjoints
+        const conjointIds = couples.map(c =>
+            c.membre1_id.equals(memberId) ? c.membre2_id : c.membre1_id
+        );
+
+        const conjoints = conjointIds.length
+            ? await db.collection('members').find({
+                _id: { $in: conjointIds }
+            }).toArray()
+            : [];
+
+        // 3) Enfants de ce membre via ses couples
+        const coupleIds = couples.map(c => c._id);
+
+        const enfantLinks = coupleIds.length
+            ? await db.collection('enfants').find({
+                couple_id: { $in: coupleIds }
+            }).toArray()
+            : [];
+
+        const enfantIds = enfantLinks.map(link => link.enfant_id);
+
+        const enfants = enfantIds.length
+            ? await db.collection('members').find({
+                _id: { $in: enfantIds }
+            }).toArray()
+            : [];
+
+        // 4) Parents du membre : on cherche les couples dont ce membre est l'enfant
+        const parentLinks = await db.collection('enfants').find({
+            enfant_id: memberId
+        }).toArray();
+
+        const parentCoupleIds = parentLinks.map(link => link.couple_id);
+
+        const parentCouples = parentCoupleIds.length
+            ? await db.collection('couples').find({
+                _id: { $in: parentCoupleIds }
+            }).toArray()
+            : [];
+
+        const parentIds = parentCouples.flatMap(c => [c.membre1_id, c.membre2_id]);
+
+        const parents = parentIds.length
+            ? await db.collection('members').find({
+                _id: { $in: parentIds }
+            }).toArray()
+            : [];
+
+        res.json({
+            parents,
+            conjoints,
+            enfants,
+            couples
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 module.exports = router;

@@ -1,15 +1,6 @@
 //détail membre
 import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  Platform,
-} from "react-native";
+import {View,Text,ActivityIndicator,TouchableOpacity,StyleSheet,Alert,ScrollView,Platform,} from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { getRole, getToken } from "../../services/auth";
 import { API_BASE_URL } from "../../config";
@@ -35,12 +26,19 @@ interface Member {
   };
 }
 
+
 export default function MemberDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [member, setMember] = useState<Member | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [relations, setRelations] = useState<{
+    parents: any[];
+    conjoints: any[];
+    enfants: any[];
+  } | null>(null);
+
 
   const canEdit = role === "admin" || role === "editeur";
 
@@ -57,6 +55,7 @@ export default function MemberDetailScreen() {
         return;
       }
 
+      //fetch membres
       const response = await fetch(`${API_BASE_URL}/members/${id}`, {
         method: "GET",
         headers: {
@@ -71,6 +70,25 @@ export default function MemberDetailScreen() {
         setMember(data);
       } else {
         Alert.alert("Erreur", data.error || data.message || "Membre introuvable");
+      }
+
+      //fetch relation
+      const relResponse = await fetch(`${API_BASE_URL}/members/${id}/relations`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const relData = await relResponse.json();
+
+      if (relResponse.ok) {
+        setRelations({
+          parents: relData.parents || [],
+          conjoints: relData.conjoints || [],
+          enfants: relData.enfants || [],
+        });
       }
     } catch (error) {
       console.error(error);
@@ -198,6 +216,31 @@ export default function MemberDetailScreen() {
           {member.coordonnees?.adresses && member.coordonnees.adresses.length > 0
             ? member.coordonnees.adresses.join(" | ")
             : "Non renseignées"}
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Relations familiales</Text>
+
+        <Text style={styles.info}>
+          Parents :{' '}
+          {relations?.parents?.length
+            ? relations.parents.map((p) => `${p.prenom} ${p.nom}`).join(', ')
+            : 'Aucun'}
+        </Text>
+
+        <Text style={styles.info}>
+          Conjoints :{' '}
+          {relations?.conjoints?.length
+            ? relations.conjoints.map((c) => `${c.prenom} ${c.nom}`).join(', ')
+            : 'Aucun'}
+        </Text>
+
+        <Text style={styles.info}>
+          Enfants :{' '}
+          {relations?.enfants?.length
+            ? relations.enfants.map((e) => `${e.prenom} ${e.nom}`).join(', ')
+            : 'Aucun'}
         </Text>
       </View>
 
