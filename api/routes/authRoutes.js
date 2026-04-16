@@ -28,8 +28,8 @@ router.post('/register', async (req, res) => {
         const newUser = await createUser({
             email: req.body.email,
             password: req.body.password,
-            role: 'admin',  //isFirstUser ? 'admin' : 'lecteur',
-            autoVerify: true //isFirstUser
+            role: isFirstUser ? 'admin' : 'lecteur',
+            autoVerify: isFirstUser
         });
 
         res.status(201).json({

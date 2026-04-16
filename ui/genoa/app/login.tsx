@@ -7,15 +7,18 @@ import { Colors } from '../constants/Colors';
 
 import { API_BASE_URL } from '../config';
 
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setErrorMessage('Veuillez remplir tous les champs');
       return;
     }
 
@@ -40,11 +43,11 @@ export default function LoginScreen() {
         Alert.alert('Succès', 'Connexion réussie !');
         router.replace('/'); // Rediriger vers l'accueil
       } else {
-        Alert.alert('Erreur', data.message || 'Identifiants incorrects');
+        setErrorMessage(data.message || data.error || 'Identifiants incorrects');
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Erreur', 'Impossible de contacter le serveur');
+      setErrorMessage('Impossible de contacter le serveur');
     } finally {
       setLoading(false);
     }
@@ -72,6 +75,10 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
+        {errorMessage ? (
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        ) : null}
+        
         <TouchableOpacity 
           style={styles.button} 
           onPress={handleLogin}

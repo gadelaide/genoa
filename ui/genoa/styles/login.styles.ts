@@ -59,4 +59,10 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     textDecorationLine: 'underline',
   },
+  errorText: {
+    color: '#d9534f',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
 });

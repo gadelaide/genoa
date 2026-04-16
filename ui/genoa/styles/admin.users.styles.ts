@@ -141,4 +141,27 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
   },
+  roleSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+    gap: 8,
+  },
+  roleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+  },
+  roleButtonActive: {
+    backgroundColor: Colors.primary,
+  },
+  roleButtonText: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  roleButtonTextActive: {
+    color: Colors.white,
+  },
 });

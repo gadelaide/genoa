@@ -312,13 +312,27 @@ export default function AdminUsersScreen() {
             )}
 
             {modalMode === 'edit' && (
-              <TextInput
-                style={styles.input}
-                placeholder="Rôle (admin, editeur, lecteur)"
-                value={editRole}
-                onChangeText={setEditRole}
-                autoCapitalize="none"
-              />
+              <View style={styles.roleSelector}>
+                {['lecteur', 'editeur', 'admin'].map((roleOption) => (
+                  <TouchableOpacity
+                    key={roleOption}
+                    style={[
+                      styles.roleButton,
+                      editRole === roleOption && styles.roleButtonActive
+                    ]}
+                    onPress={() => setEditRole(roleOption)}
+                  >
+                    <Text
+                      style={[
+                        styles.roleButtonText,
+                        editRole === roleOption && styles.roleButtonTextActive
+                      ]}
+                    >
+                      {roleOption}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             )}
 
             <View style={styles.modalButtons}>

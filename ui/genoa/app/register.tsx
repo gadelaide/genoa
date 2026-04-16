@@ -11,10 +11,12 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  
 
   const handleRegister = async () => {
     if (!email || !password) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setErrorMessage('Veuillez remplir tous les champs');
       return;
     }
 
@@ -35,11 +37,11 @@ export default function RegisterScreen() {
         Alert.alert('Succès', 'Compte créé avec succès ! Attendez la validation d\'un administrateur.');
         router.push('/login');
       } else {
-        Alert.alert('Erreur', data.message || data.error || 'Une erreur est survenue');
+        setErrorMessage(data.message || data.error || 'Une erreur est survenue');
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Erreur', 'Impossible de contacter le serveur');
+      setErrorMessage('Impossible de contacter le serveur');
     } finally {
       setLoading(false);
     }
@@ -66,6 +68,14 @@ export default function RegisterScreen() {
           onChangeText={setPassword}
           secureTextEntry
         />
+
+        {errorMessage ? (
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        ) : null}
+
+        {successMessage ? (
+          <Text style={styles.successText}>{successMessage}</Text>
+        ) : null}
 
         <TouchableOpacity
           style={styles.button}
