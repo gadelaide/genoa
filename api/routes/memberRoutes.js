@@ -417,7 +417,6 @@ router.get('/:id/relations', authenticateToken, async (req, res) => {
 
         // 5) Fratrie : enfants des mêmes couples parents, sauf le membre lui-même
         let fratrie = [];
-
         if (parentCoupleIds.length > 0) {
             const siblingLinks = await db.collection('enfants').find({
                 couple_id: { $in: parentCoupleIds },

@@ -21,6 +21,7 @@ interface Person {
   _id: string;
   nom: string;
   prenom: string;
+  dateNaissance?: string;
 }
 
 interface Relations {
@@ -82,6 +83,7 @@ export default function MemberTreeScreen() {
   const [showConjoints, setShowConjoints] = useState(true);
   const [showEnfants, setShowEnfants] = useState(true);
   const [compactMode, setCompactMode] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const [scale, setScale] = useState(1);
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -412,12 +414,18 @@ export default function MemberTreeScreen() {
             active={compactMode}
             onPress={() => setCompactMode((prev) => !prev)}
           />
+          <FilterButton
+            label={showDetails ? "Simple" : "Détail"}
+            active={showDetails}
+            onPress={() => setShowDetails((prev) => !prev)}
+          />
         </View>
       </ScrollView>
 
       <Text style={styles.legend}>
         Appui court : recentrer l’arbre • Appui long : ouvrir la fiche
       </Text>
+      
 
       <View style={styles.zoomControls}>
         <ZoomButton label="−" onPress={zoomOut} />
@@ -526,7 +534,13 @@ export default function MemberTreeScreen() {
                       >
                         {meta.person.prenom} {meta.person.nom}
                       </Text>
-
+                      {showDetails && (
+                        <Text style={styles.sub}>
+                          {meta.person.dateNaissance
+                            ? `Né le ${meta.person.dateNaissance}`
+                            : 'Date inconnue'}
+                        </Text>
+                      )}
                       {!compactMode && (
                         <Text style={styles.nodeKind}>{kindLabel(meta.kind)}</Text>
                       )}
@@ -709,5 +723,32 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.secondary,
     textAlign: 'center',
+  },
+  detailButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  detailButtonActive: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+
+  detailButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+
+  detailButtonTextActive: {
+    color: Colors.primary,
   },
 });
