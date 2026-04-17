@@ -84,6 +84,7 @@ export default function MemberTreeScreen() {
   const [showEnfants, setShowEnfants] = useState(true);
   const [compactMode, setCompactMode] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [mode, setMode] = useState<'all' | 'asc' | 'desc'>('all');
 
   const [scale, setScale] = useState(1);
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -226,7 +227,7 @@ export default function MemberTreeScreen() {
       meta[firstSpouse._id] = { person: firstSpouse, kind: 'conjoint' };
     }
 
-    if (showParents && relations.parents.length > 0) {
+    if (showParents && mode !== 'desc' && relations.parents.length > 0) {
       const totalWidth = (relations.parents.length - 1) * dims.parentGap;
       const startX = centerMemberX - totalWidth / 2;
 
@@ -239,7 +240,7 @@ export default function MemberTreeScreen() {
       });
     }
 
-    if (showFratrie && relations.fratrie.length > 0) {
+    if (showFratrie && mode === 'all' && relations.fratrie.length > 0) {
       const siblings = relations.fratrie;
       const total = siblings.length;
 
@@ -260,7 +261,7 @@ export default function MemberTreeScreen() {
       }
     }
 
-    if (showEnfants && relations.enfants.length > 0) {
+    if (showEnfants && mode !== 'asc' && relations.enfants.length > 0) {
       const childrenCenterX = hasSpouse ? coupleCenterX : centerMemberX;
       const totalWidth = (relations.enfants.length - 1) * dims.childGap;
       const startX = childrenCenterX - totalWidth / 2;
@@ -316,6 +317,7 @@ export default function MemberTreeScreen() {
     dims,
     nodeWidth,
     nodeHeight,
+    mode,
   ]);
 
   const edges = useMemo(() => {
@@ -327,13 +329,13 @@ export default function MemberTreeScreen() {
       to: string;
     }> = [];
 
-    if (showParents) {
+    if (showParents && mode !== 'desc') {
       relations.parents.forEach((parent) => {
         result.push({ type: 'parent', from: parent._id, to: member._id });
       });
     }
 
-    if (showConjoints && relations.conjoints[0]) {
+    if (showConjoints && mode !== 'asc' && relations.conjoints[0]) {
       result.push({
         type: 'conjoint',
         from: member._id,
@@ -341,14 +343,14 @@ export default function MemberTreeScreen() {
       });
     }
 
-    if (showEnfants) {
+    if (showEnfants && mode !== 'asc') {
       relations.enfants.forEach((child) => {
         result.push({ type: 'child', from: member._id, to: child._id });
       });
     }
 
     return result;
-  }, [member, relations, showParents, showConjoints, showEnfants]);
+  }, [member, relations, showParents, showConjoints, showEnfants,mode]);
 
   const webWheelProps =
     Platform.OS === 'web'
@@ -418,6 +420,23 @@ export default function MemberTreeScreen() {
             label={showDetails ? "Simple" : "Détail"}
             active={showDetails}
             onPress={() => setShowDetails((prev) => !prev)}
+          />
+          <FilterButton
+            label="Tout"
+            active={mode === 'all'}
+            onPress={() => setMode('all')}
+          />
+
+          <FilterButton
+            label="Ascendants"
+            active={mode === 'asc'}
+            onPress={() => setMode('asc')}
+          />
+
+          <FilterButton
+            label="Descendants"
+            active={mode === 'desc'}
+            onPress={() => setMode('desc')}
           />
         </View>
       </ScrollView>
