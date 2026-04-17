@@ -37,6 +37,7 @@ export default function MemberDetailScreen() {
     parents: any[];
     conjoints: any[];
     enfants: any[];
+    fratrie: any[];
   } | null>(null);
 
 
@@ -88,6 +89,7 @@ export default function MemberDetailScreen() {
           parents: relData.parents || [],
           conjoints: relData.conjoints || [],
           enfants: relData.enfants || [],
+          fratrie: relData.fratrie || [],
         });
       }
     } catch (error) {
@@ -238,6 +240,20 @@ export default function MemberDetailScreen() {
           <Text style={styles.info}>Aucun</Text>
         )}
         
+        <Text style={[styles.sectionTitle, { marginTop: 10 }]}>Fratrie</Text>
+        {relations?.fratrie?.length ? (
+          relations.fratrie.map((f) => (
+            <TouchableOpacity
+              key={f._id}
+              onPress={() => router.push(`/members/${f._id}`)}
+            >
+              <Text style={styles.linkText}>{f.prenom} {f.nom}</Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.info}>Aucune</Text>
+        )}
+        
         <Text style={styles.sectionTitle}>Conjoints :</Text>
         {relations?.conjoints?.length ? (
           relations.conjoints.map((c) => (
@@ -287,7 +303,15 @@ export default function MemberDetailScreen() {
       </View>
 
       {canEdit && (
+        
         <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push(`/members/tree/${member._id}`)}
+          >
+            <Text style={styles.buttonText}>Voir l'arbre</Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => router.push(`/members/edit/${member._id}`)}

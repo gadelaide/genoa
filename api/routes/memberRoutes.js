@@ -415,10 +415,29 @@ router.get('/:id/relations', authenticateToken, async (req, res) => {
             }).toArray()
             : [];
 
+        // 5) Fratrie : enfants des mêmes couples parents, sauf le membre lui-même
+        let fratrie = [];
+
+        if (parentCoupleIds.length > 0) {
+            const siblingLinks = await db.collection('enfants').find({
+                couple_id: { $in: parentCoupleIds },
+                enfant_id: { $ne: memberId }
+            }).toArray();
+
+            const siblingIds = siblingLinks.map(link => link.enfant_id);
+
+            fratrie = siblingIds.length
+                ? await db.collection('members').find({
+                    _id: { $in: siblingIds }
+                }).toArray()
+                : [];
+        }
+
         res.json({
             parents,
             conjoints,
             enfants,
+            fratrie,
             couples
         });
 
