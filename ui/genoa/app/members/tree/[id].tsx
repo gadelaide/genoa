@@ -79,8 +79,8 @@ export default function MemberTreeScreen() {
   const [loading, setLoading] = useState(true);
 
   const [showParents, setShowParents] = useState(true);
-  const [showFratrie, setShowFratrie] = useState(true);
-  const [showConjoints, setShowConjoints] = useState(true);
+  const [showFratrie, setShowFratrie] = useState(false);
+  const [showConjoints, setShowConjoints] = useState(false);
   const [showEnfants, setShowEnfants] = useState(true);
   const [compactMode, setCompactMode] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -390,54 +390,65 @@ export default function MemberTreeScreen() {
         showsHorizontalScrollIndicator={false}
         style={styles.filtersWrapper}
       >
-        <View style={styles.filtersRow}>
-          <FilterButton
-            label="Parents"
-            active={showParents}
-            onPress={() => setShowParents((prev) => !prev)}
-          />
-          <FilterButton
-            label="Fratrie"
-            active={showFratrie}
-            onPress={() => setShowFratrie((prev) => !prev)}
-          />
-          <FilterButton
-            label="Conjoints"
-            active={showConjoints}
-            onPress={() => setShowConjoints((prev) => !prev)}
-          />
-          <FilterButton
-            label="Enfants"
-            active={showEnfants}
-            onPress={() => setShowEnfants((prev) => !prev)}
-          />
-          <FilterButton
-            label="Compact"
-            active={compactMode}
-            onPress={() => setCompactMode((prev) => !prev)}
-          />
-          <FilterButton
-            label={showDetails ? "Simple" : "Détail"}
-            active={showDetails}
-            onPress={() => setShowDetails((prev) => !prev)}
-          />
-          <FilterButton
-            label="Tout"
-            active={mode === 'all'}
-            onPress={() => setMode('all')}
-          />
+        <View style={styles.filtersGroup}>
+          <Text style={styles.filterGroupTitle}>Relations affichées</Text>
 
-          <FilterButton
-            label="Ascendants"
-            active={mode === 'asc'}
-            onPress={() => setMode('asc')}
-          />
+          <View style={styles.filtersRow}>
+            <FilterButton
+              label="Parents"
+              active={showParents}
+              onPress={() => setShowParents((prev) => !prev)}
+            />
+            <FilterButton
+              label="Fratrie"
+              active={showFratrie}
+              onPress={() => setShowFratrie((prev) => !prev)}
+            />
+            <FilterButton
+              label="Conjoints"
+              active={showConjoints}
+              onPress={() => setShowConjoints((prev) => !prev)}
+            />
+            <FilterButton
+              label="Enfants"
+              active={showEnfants}
+              onPress={() => setShowEnfants((prev) => !prev)}
+            />
+          </View>
+          <Text style={styles.filterGroupTitle}>Mode: </Text>
+          <View style={styles.filtersRow}>
+            <FilterButton
+              label="Tout"
+              active={mode === 'all'}
+              onPress={() => setMode('all')}
+            />
 
-          <FilterButton
-            label="Descendants"
-            active={mode === 'desc'}
-            onPress={() => setMode('desc')}
-          />
+            <FilterButton
+              label="Ascendants"
+              active={mode === 'asc'}
+              onPress={() => setMode('asc')}
+            />
+
+            <FilterButton
+              label="Descendants"
+              active={mode === 'desc'}
+              onPress={() => setMode('desc')}
+            />
+          </View>
+
+          <Text style={styles.filterGroupTitle}>Champs affichés</Text>
+          <View style={styles.filtersRow}>
+            <FilterButton
+              label="Compact"
+              active={compactMode}
+              onPress={() => setCompactMode((prev) => !prev)}
+            />
+            <FilterButton
+              label={showDetails ? "Simple" : "Détail"}
+              active={showDetails}
+              onPress={() => setShowDetails((prev) => !prev)}
+            />
+          </View>
         </View>
       </ScrollView>
 
@@ -630,7 +641,8 @@ const styles = StyleSheet.create({
   filtersRow: {
     flexDirection: 'row',
     gap: 10,
-    paddingBottom: 4,
+    flexWrap: 'wrap',
+    marginBottom: 8,
   },
   filterButton: {
     backgroundColor: '#F3F5F4',
@@ -651,6 +663,17 @@ const styles = StyleSheet.create({
   },
   filterButtonTextActive: {
     color: Colors.white,
+  },
+  filtersGroup: {
+    gap: 10,
+    paddingBottom: 4,
+  },
+
+  filterGroupTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.secondary,
+    marginBottom: 4,
   },
   legend: {
     fontSize: 13,
@@ -770,4 +793,5 @@ const styles = StyleSheet.create({
   detailButtonTextActive: {
     color: Colors.primary,
   },
+  
 });
