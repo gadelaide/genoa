@@ -46,17 +46,7 @@ const SIZE = {
     siblingGap: 220,
     parentGap: 230,
     childGap: 190,
-  },
-  compact: {
-    width: 150,
-    height: 60,
-    spouseGap: 190,
-    parentY: 150,
-    childY: 190,
-    siblingGap: 180,
-    parentGap: 190,
-    childGap: 160,
-  },
+  }
 };
 
 const MIN_SCALE = 0.7;
@@ -82,14 +72,14 @@ export default function MemberTreeScreen() {
   const [showFratrie, setShowFratrie] = useState(false);
   const [showConjoints, setShowConjoints] = useState(false);
   const [showEnfants, setShowEnfants] = useState(true);
-  const [compactMode, setCompactMode] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showBirthDate, setShowBirthDate] = useState(false);
+  const [showRelationType, setShowRelationType] = useState(true);
   const [mode, setMode] = useState<'all' | 'asc' | 'desc'>('all');
 
   const [scale, setScale] = useState(1);
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const dims = compactMode ? SIZE.compact : SIZE.normal;
+  const dims = SIZE.normal;
   const nodeWidth = dims.width;
   const nodeHeight = dims.height;
 
@@ -313,7 +303,6 @@ export default function MemberTreeScreen() {
     showFratrie,
     showConjoints,
     showEnfants,
-    compactMode,
     dims,
     nodeWidth,
     nodeHeight,
@@ -439,14 +428,14 @@ export default function MemberTreeScreen() {
           <Text style={styles.filterGroupTitle}>Champs affichés</Text>
           <View style={styles.filtersRow}>
             <FilterButton
-              label="Compact"
-              active={compactMode}
-              onPress={() => setCompactMode((prev) => !prev)}
+              label="Date naissance"
+              active={showBirthDate}
+              onPress={() => setShowBirthDate((prev) => !prev)}
             />
             <FilterButton
-              label={showDetails ? "Simple" : "Détail"}
-              active={showDetails}
-              onPress={() => setShowDetails((prev) => !prev)}
+              label="Type relation"
+              active={showRelationType}
+              onPress={() => setShowRelationType((prev) => !prev)}
             />
           </View>
         </View>
@@ -544,7 +533,6 @@ export default function MemberTreeScreen() {
                       activeOpacity={0.9}
                       style={[
                         styles.node,
-                        compactMode && styles.nodeCompact,
                         meta.kind === 'center' && styles.nodeCenter,
                         {
                           left: pos.x - nodeWidth / 2,
@@ -558,20 +546,20 @@ export default function MemberTreeScreen() {
                         numberOfLines={2}
                         style={[
                           styles.nodeName,
-                          compactMode && styles.nodeNameCompact,
                           meta.kind === 'center' && styles.nodeNameCenter,
                         ]}
                       >
                         {meta.person.prenom} {meta.person.nom}
                       </Text>
-                      {showDetails && (
+                      {showBirthDate && (
                         <Text style={styles.sub}>
                           {meta.person.dateNaissance
                             ? `Né le ${meta.person.dateNaissance}`
                             : 'Date inconnue'}
                         </Text>
                       )}
-                      {!compactMode && (
+
+                      {showRelationType && (
                         <Text style={styles.nodeKind}>{kindLabel(meta.kind)}</Text>
                       )}
                     </TouchableOpacity>
@@ -745,9 +733,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: '#F5FBF5',
   },
-  nodeCompact: {
-    borderRadius: 13,
-  },
   nodeName: {
     fontSize: 15,
     fontWeight: '700',
@@ -756,9 +741,6 @@ const styles = StyleSheet.create({
   },
   nodeNameCenter: {
     fontSize: 17,
-  },
-  nodeNameCompact: {
-    fontSize: 13,
   },
   nodeKind: {
     marginTop: 6,
