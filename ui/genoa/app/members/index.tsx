@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Alert,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { getToken, getRole } from "../../services/auth";
@@ -98,7 +99,12 @@ export default function MembersScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        contentContainerStyle={{ gap: 8, paddingBottom: 15 }}
+        style={{ flexGrow: 0 }}
+      >
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => router.push('/members/search')}
@@ -131,7 +137,7 @@ export default function MembersScreen() {
         >
           <Text style={styles.addButtonText}>Stats</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {members.length === 0 ? (
         <View style={styles.centerContainer}>

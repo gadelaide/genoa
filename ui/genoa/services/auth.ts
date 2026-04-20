@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { jwtDecode } from 'jwt-decode';
 
 const TOKEN_KEY = 'genoa_auth_token'; //clé utilisé pour stocker le token 
 const ROLE_KEY = 'genoa_user_role';
@@ -82,5 +83,18 @@ export async function deleteRole() {
     }
   } catch (error) {
     console.error('Erreur lors de la suppression du role', error);
+  }
+}
+
+// récupérer le user ID depuis le token JWT
+export async function getUserId() {
+  const token = await getToken();
+  if (!token) return null;
+  try {
+    const decoded: { id?: string } = jwtDecode(token);
+    return decoded?.id || null;
+  } catch (error) {
+    console.error('Erreur lors du décodage du token', error);
+    return null;
   }
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput , Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getToken } from '../../services/auth';
 import { API_BASE_URL } from '../../config';
@@ -135,7 +135,7 @@ export default function AdminUsersScreen() {
     setModalMode('create');
     setEditEmail('');
     setEditPassword('');
-    setEditRole('lecteur'); // Default role for created users
+    setEditRole('lecteur'); // role par défaut lors de la création
     setModalVisible(true);
   };
 
@@ -233,20 +233,6 @@ export default function AdminUsersScreen() {
           <Text style={styles.actionButtonText}>Modifier</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => {
-            const newRole = item.role === 'admin' ? 'lecteur' : 'admin';
-            setEditEmail(item.email);
-            setEditRole(newRole);
-            setSelectedUserId(item._id);
-            setModalMode('edit');
-            // sauvegarde directe du nouveau rôle
-            saveRoleQuick(item._id, item.email, newRole);
-          }}
-        >
-          <Text style={styles.actionButtonText}>Basculer en {item.role === 'admin' ? 'lecteur' : 'admin'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={[styles.actionButton, styles.deleteButton]}
           onPress={() => deleteUser(item._id)}
         >
@@ -255,24 +241,6 @@ export default function AdminUsersScreen() {
       </View>
     </View>
   );
-
-  const saveRoleQuick = async (id: string, email: string, newRole: string) => {
-    try {
-      const token = await getToken();
-      const res = await fetch(`${API_BASE_URL}/users/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ role: newRole })
-      });
-      if (res.ok) {
-        setUsers(users.map(u => u._id === id ? { ...u, role: newRole } : u));
-        Alert.alert('Succès', 'Droits mis à jour.');
-      }
-    } catch (err) { }
-  };
 
   if (loading) {
     return (

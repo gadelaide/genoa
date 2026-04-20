@@ -1,6 +1,8 @@
 require('dotenv').config(); // charge le .env
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 
 
 const dbObject = require('./config/db');
@@ -11,6 +13,12 @@ const memberRoutes = require('./routes/memberRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: '*' }
+});
+app.set('io', io);
+
 const PORT = process.env.PORT || 3000;
 
 // middlewares globaux
@@ -32,8 +40,9 @@ dbObject.connectToServer()
         app.use('/api/users', userRoutes);
 
         // lancement du serveur
-        app.listen(PORT,'0.0.0.0',() => {
+        server.listen(PORT, '0.0.0.0', () => {
             console.log(`Serveur Genoa en écoute sur http://localhost:${PORT}`);
+            console.log(`Socket.IO est activé et en écoute.`);
         });
 
     })

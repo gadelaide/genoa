@@ -12,7 +12,7 @@ const { authenticateToken, requireEditor } = require('../middlewares/auth');
 //CREATE / UPDATE / DELETE → éditeur
 //READ → connecté seulement
 
- 
+
 // GET /api/members/search?q=texte (on le met avant get /api/members/:id pour ne pas confondre search... comme un id)
 router.get('/search', authenticateToken, async (req, res) => {
     try {
@@ -176,8 +176,83 @@ router.get('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// POST /api/members/:id/lock pour verrouiller un membre avant édition
+router.post('/:id/lock', authenticateToken, requireEditor, async (req, res) => {
+    try {
+        const db = getDb();
+        const memberId = new ObjectId(req.params.id);
+        const currentUserId = req.user.id;
+
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60000);
+
+        const result = await db.collection('members').findOneAndUpdate(
+            {
+                _id: memberId,
+                $or: [
+                    { verrou: { $exists: false } },
+                    { verrou: null },
+                    { "verrou.userId": currentUserId },
+                    { "verrou.lockedAt": { $lt: tenMinutesAgo } }
+                ]
+            },
+            {
+                $set: {
+                    verrou: { userId: currentUserId, lockedAt: new Date() }
+                }
+            },
+            { returnDocument: 'after' }
+        );
+
+        if (!result) {
+            // document verrouillé (ou introuvable)
+            return res.status(409).json({ error: 'Ce membre est actuellement en cours d\'édition par un autre utilisateur.' });
+        }
+
+        // diffuser l'info via socket
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('memberLocked', { memberId: req.params.id, userId: currentUserId });
+        }
+
+        res.json({ message: 'Verrou acquis avec succès', verrou: result.verrou });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/members/:id/unlock pour libérer un membre après édition
+router.post('/:id/unlock', authenticateToken, requireEditor, async (req, res) => {
+    try {
+        const db = getDb();
+        const memberId = new ObjectId(req.params.id);
+        const currentUserId = req.user.id;
+
+        // libération du verrou si c'est nous qui l'avons
+        const result = await db.collection('members').findOneAndUpdate(
+            {
+                _id: memberId,
+                "verrou.userId": currentUserId
+            },
+            {
+                $unset: { verrou: "" }
+            },
+            { returnDocument: 'after' }
+        );
+
+        // diffuser l'info via socket
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('memberUnlocked', { memberId: req.params.id });
+        }
+
+        res.json({ message: 'Verrou libéré avec succès' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // PUT /api/members/:id pour modifier un membre
-router.put('/:id',authenticateToken, requireEditor,  async (req, res) => {
+router.put('/:id', authenticateToken, requireEditor, async (req, res) => {
     try {
         const db = getDb();
         const updates = req.body;
@@ -203,7 +278,7 @@ router.put('/:id',authenticateToken, requireEditor,  async (req, res) => {
 });
 
 // DELETE /api/members/:id pour supprimer un membre
-router.delete('/:id',authenticateToken, requireEditor,  async (req, res) => {
+router.delete('/:id', authenticateToken, requireEditor, async (req, res) => {
     try {
         const db = getDb();
 
@@ -224,7 +299,7 @@ router.delete('/:id',authenticateToken, requireEditor,  async (req, res) => {
 
 // Ajouter les routes pour la "Gestion des relations familiales" 
 // POST /api/members/couples
-router.post('/couples',authenticateToken, requireEditor,  async (req, res) => {
+router.post('/couples', authenticateToken, requireEditor, async (req, res) => {
     try {
         const db = getDb();
         const { membre1_id, membre2_id, dateUnion, dateSeparation } = req.body;
@@ -304,7 +379,7 @@ router.post('/enfants', authenticateToken, requireEditor, async (req, res) => {
             return res.status(404).json({ error: 'Couple introuvable' });
         }
 
-        
+
         //vérifier l'existence de l'enfant 
         const enfant = await db.collection('members').findOne({
             _id: new ObjectId(enfant_id)
@@ -328,7 +403,7 @@ router.post('/enfants', authenticateToken, requireEditor, async (req, res) => {
             couple_id: new ObjectId(couple_id),
             enfant_id: new ObjectId(enfant_id),
             nature: nature || 'biologique',
-            createdAt: new Date(),           
+            createdAt: new Date(),
             createurId: new ObjectId(req.user.id)
 
         });

@@ -2,8 +2,9 @@
 import React, { useCallback, useState } from "react";
 import {View,Text,ActivityIndicator,TouchableOpacity,StyleSheet,Alert,ScrollView,Platform,} from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { getRole, getToken } from "../../services/auth";
+import { getRole, getToken, getUserId } from "../../services/auth";
 import { API_BASE_URL } from "../../config";
+import socketService from "../../services/socket";
 import { globalStyles as styles } from '../../styles/global.styles';
 
 interface Member {
@@ -24,6 +25,10 @@ interface Member {
     publique?: string;
     privee?: string;
   };
+  verrou?: {
+    userId: string;
+    lockedAt: string;
+  };
 }
 
 
@@ -39,7 +44,9 @@ export default function MemberDetailScreen() {
     enfants: any[];
     fratrie: any[];
   } | null>(null);
-
+  
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLockedByOther, setIsLockedByOther] = useState(false);
 
   const canEdit = role === "admin" || role === "editeur";
 
@@ -48,7 +55,9 @@ export default function MemberDetailScreen() {
       setLoading(true);
       const token = await getToken();
       const savedRole = await getRole();
+      const uId = await getUserId();
       setRole(savedRole);
+      setCurrentUserId(uId);
 
       if (!token) {
         Alert.alert("Erreur", "Vous devez être connecté");
@@ -69,6 +78,11 @@ export default function MemberDetailScreen() {
 
       if (response.ok) {
         setMember(data);
+        if (data.verrou && data.verrou.userId !== uId) {
+            setIsLockedByOther(true);
+        } else {
+            setIsLockedByOther(false);
+        }
       } else {
         Alert.alert("Erreur", data.error || data.message || "Membre introuvable");
       }
@@ -103,8 +117,49 @@ export default function MemberDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchMember();
-    }, [id])
+      
+      const socket = socketService.connect();
+      
+      const onMemberLocked = (payload: any) => {
+          if (payload.memberId === id && payload.userId !== currentUserId) {
+              setIsLockedByOther(true);
+          }
+      };
+
+      const onMemberUnlocked = (payload: any) => {
+          if (payload.memberId === id) {
+              setIsLockedByOther(false);
+          }
+      };
+
+      socket.on('memberLocked', onMemberLocked);
+      socket.on('memberUnlocked', onMemberUnlocked);
+
+      return () => {
+          socket.off('memberLocked', onMemberLocked);
+          socket.off('memberUnlocked', onMemberUnlocked);
+      };
+    }, [id, currentUserId])
   );
+
+  const handleEditClick = async () => {
+      if (!member) return;
+      try {
+          const token = await getToken();
+          const response = await fetch(`${API_BASE_URL}/members/${member._id}/lock`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await response.json();
+          if (response.ok) {
+              router.push(`/members/edit/${member._id}`);
+          } else {
+              Alert.alert("Impossible", data.error || "Edition en cours par un autre membre.");
+          }
+      } catch (err) {
+          Alert.alert("Erreur", "Erreur réseau.");
+      }
+  };
 
   const confirmAndDelete = async () => {
     try {
@@ -313,10 +368,13 @@ export default function MemberDetailScreen() {
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => router.push(`/members/edit/${member._id}`)}
+            style={[styles.editButton, isLockedByOther && { backgroundColor: '#ccc' }]}
+            onPress={handleEditClick}
+            disabled={isLockedByOther}
           >
-            <Text style={styles.buttonText}>Modifier</Text>
+            <Text style={styles.buttonText}>
+              {isLockedByOther ? "En cours d'édition..." : "Modifier"}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>

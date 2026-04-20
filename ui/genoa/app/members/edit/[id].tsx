@@ -93,6 +93,20 @@ export default function EditMemberScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchMember();
+
+      return () => {
+        // appelé quand on quitte la page si retour, success save, etc
+        getToken().then(token => {
+          if (token) {
+            fetch(`${API_BASE_URL}/members/${id}/unlock`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }).catch(err => console.error("Erreur unlock", err));
+          }
+        });
+      };
     }, [id])
   );
 
