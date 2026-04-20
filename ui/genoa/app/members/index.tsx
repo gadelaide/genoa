@@ -99,9 +99,9 @@ export default function MembersScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8, paddingBottom: 15 }}
         style={{ flexGrow: 0 }}
       >

@@ -18,4 +18,4 @@
  *  L'IP du PC se récupère avec la commande "ipconfig" (IPv4).
  *  Le téléphone et le PC doivent être sur le même réseau Wi-Fi.
  */
-export const API_BASE_URL = 'http://172.18.60.244:3000/api'; 
+export const API_BASE_URL = 'http://192.168.48.68:3000/api'; 

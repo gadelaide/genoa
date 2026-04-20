@@ -168,9 +168,12 @@ export const globalStyles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 40,
   },
 
   editButton: {
