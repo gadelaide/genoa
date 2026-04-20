@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Svg, { Line } from 'react-native-svg';
+import dagre from 'dagre';
 
 import { getToken } from '../../../services/auth';
 import { API_BASE_URL } from '../../../config';
@@ -21,6 +22,7 @@ interface Person {
   _id: string;
   nom: string;
   prenom: string;
+  dateNaissance?: string;
 }
 
 interface Relations {
@@ -45,17 +47,7 @@ const SIZE = {
     siblingGap: 220,
     parentGap: 230,
     childGap: 190,
-  },
-  compact: {
-    width: 150,
-    height: 60,
-    spouseGap: 190,
-    parentY: 150,
-    childY: 190,
-    siblingGap: 180,
-    parentGap: 190,
-    childGap: 160,
-  },
+  }
 };
 
 const MIN_SCALE = 0.7;
@@ -78,15 +70,17 @@ export default function MemberTreeScreen() {
   const [loading, setLoading] = useState(true);
 
   const [showParents, setShowParents] = useState(true);
-  const [showFratrie, setShowFratrie] = useState(true);
-  const [showConjoints, setShowConjoints] = useState(true);
+  const [showFratrie, setShowFratrie] = useState(false);
+  const [showConjoints, setShowConjoints] = useState(false);
   const [showEnfants, setShowEnfants] = useState(true);
-  const [compactMode, setCompactMode] = useState(false);
+  const [showBirthDate, setShowBirthDate] = useState(false);
+  const [showRelationType, setShowRelationType] = useState(true);
+  const [mode, setMode] = useState<'all' | 'asc' | 'desc'>('all');
 
   const [scale, setScale] = useState(1);
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const dims = compactMode ? SIZE.compact : SIZE.normal;
+  const dims = SIZE.normal;
   const nodeWidth = dims.width;
   const nodeHeight = dims.height;
 
@@ -198,110 +192,101 @@ export default function MemberTreeScreen() {
       };
     }
 
-    const pos: NodePosition = {};
+    const g = new dagre.graphlib.Graph();
+    g.setGraph({
+      rankdir: 'TB',
+      ranksep: 120,
+      nodesep: 70,
+      marginx: 40,
+      marginy: 40,
+    });
+    g.setDefaultEdgeLabel(() => ({}));
+
     const meta: NodeMeta = {};
 
-    const centerY = BASE_CANVAS_HEIGHT / 2 - 40;
-    const canvasCenterX = BASE_CANVAS_WIDTH / 2;
-    const visibleConjoints = showConjoints ? relations.conjoints : [];
-    const firstSpouse = visibleConjoints[0] || null;
-
-    const hasSpouse = !!firstSpouse;
-    const coupleCenterX = canvasCenterX;
-
-    const centerMemberX = hasSpouse
-      ? coupleCenterX - dims.spouseGap / 2
-      : coupleCenterX;
-
-    pos[member._id] = { x: centerMemberX, y: centerY };
+    // membre central
+    g.setNode(member._id, { width: nodeWidth, height: nodeHeight });
     meta[member._id] = { person: member, kind: 'center' };
 
-    if (firstSpouse) {
-      pos[firstSpouse._id] = {
-        x: coupleCenterX + dims.spouseGap / 2,
-        y: centerY,
-      };
-      meta[firstSpouse._id] = { person: firstSpouse, kind: 'conjoint' };
-    }
-
-    if (showParents && relations.parents.length > 0) {
-      const totalWidth = (relations.parents.length - 1) * dims.parentGap;
-      const startX = centerMemberX - totalWidth / 2;
-
-      relations.parents.forEach((parent, index) => {
-        pos[parent._id] = {
-          x: startX + index * dims.parentGap,
-          y: centerY - dims.parentY,
-        };
+    // parents
+    if (showParents && mode !== 'desc') {
+      relations.parents.forEach((parent) => {
+        g.setNode(parent._id, { width: nodeWidth, height: nodeHeight });
+        g.setEdge(parent._id, member._id);
         meta[parent._id] = { person: parent, kind: 'parent' };
       });
     }
 
-    if (showFratrie && relations.fratrie.length > 0) {
-      const siblings = relations.fratrie;
-      const total = siblings.length;
+    // conjoint
+    const visibleConjoints =
+      showConjoints && mode !== 'asc' ? relations.conjoints : [];
 
-      siblings.forEach((sibling, index) => {
-        const isLeftSide = index % 2 === 0;
-        const rank = Math.floor(index / 2) + 1;
-        const offset = rank * dims.siblingGap;
+    visibleConjoints.forEach((conjoint) => {
+      g.setNode(conjoint._id, { width: nodeWidth, height: nodeHeight });
+      g.setEdge(member._id, conjoint._id);
+      meta[conjoint._id] = { person: conjoint, kind: 'conjoint' };
+    });
 
-        pos[sibling._id] = {
-          x: centerMemberX + (isLeftSide ? -offset : offset),
-          y: centerY,
-        };
-        meta[sibling._id] = { person: sibling, kind: 'sibling' };
-      });
-
-      if (total === 1) {
-        pos[siblings[0]._id].x = centerMemberX - dims.siblingGap;
-      }
-    }
-
-    if (showEnfants && relations.enfants.length > 0) {
-      const childrenCenterX = hasSpouse ? coupleCenterX : centerMemberX;
-      const totalWidth = (relations.enfants.length - 1) * dims.childGap;
-      const startX = childrenCenterX - totalWidth / 2;
-
-      relations.enfants.forEach((child, index) => {
-        pos[child._id] = {
-          x: startX + index * dims.childGap,
-          y: centerY + dims.childY,
-        };
+    // enfants
+    if (showEnfants && mode !== 'asc') {
+      relations.enfants.forEach((child) => {
+        g.setNode(child._id, { width: nodeWidth, height: nodeHeight });
+        g.setEdge(member._id, child._id);
         meta[child._id] = { person: child, kind: 'child' };
       });
     }
 
-    const xs = Object.values(pos).map((p) => p.x);
-    const ys = Object.values(pos).map((p) => p.y);
+    // fratrie
+    if (showFratrie && mode === 'all') {
+      relations.fratrie.forEach((sibling) => {
+        g.setNode(sibling._id, { width: nodeWidth, height: nodeHeight });
+        g.setEdge(member._id, sibling._id, { weight: 0.2 });
+        meta[sibling._id] = { person: sibling, kind: 'sibling' };
+      });
+    }
 
-    const minX = Math.min(...xs) - nodeWidth;
-    const maxX = Math.max(...xs) + nodeWidth;
-    const minY = Math.min(...ys) - nodeHeight;
-    const maxY = Math.max(...ys) + nodeHeight;
+    dagre.layout(g);
 
-    const contentWidth = Math.max(BASE_CANVAS_WIDTH, maxX - minX + 120);
-    const contentHeight = Math.max(BASE_CANVAS_HEIGHT, maxY - minY + 120);
+    const pos: NodePosition = {};
+    let maxX = 0;
+    let maxY = 0;
 
-    const offsetX = minX < 40 ? 40 - minX : 0;
-    const offsetY = minY < 40 ? 40 - minY : 0;
+    for (const nodeId of g.nodes() as string[]) {
+      const node = g.node(nodeId);
+      if (!node) continue;
 
-    Object.keys(pos).forEach((key) => {
-      pos[key] = {
-        x: pos[key].x + offsetX,
-        y: pos[key].y + offsetY,
-      };
-    });
+      pos[nodeId] = { x: node.x, y: node.y };
+
+      if (node.x > maxX) maxX = node.x;
+      if (node.y > maxY) maxY = node.y;
+    }
+
+    // dimensions du canvas
+    const width = Math.max(BASE_CANVAS_WIDTH, maxX + nodeWidth);
+    const height = Math.max(BASE_CANVAS_HEIGHT, maxY + nodeHeight);
+
+    const spouseIds = visibleConjoints.map((c) => c._id);
+
+    const centerNode = pos[member._id];
+    const firstSpouseId = spouseIds[0];
+    const firstSpouseNode = firstSpouseId ? pos[firstSpouseId] : null;
+
+    const coupleCenterX =
+      firstSpouseNode && centerNode
+        ? (centerNode.x + firstSpouseNode.x) / 2
+        : centerNode?.x || width / 2;
+
+    const centerY = centerNode?.y || height / 2;
 
     return {
       pos,
       meta,
-      width: contentWidth,
-      height: contentHeight,
+      width,
+      height,
       centerId: member._id,
-      spouseIds: firstSpouse ? [firstSpouse._id] : [],
-      coupleCenterX: coupleCenterX + offsetX,
-      centerY: centerY + offsetY,
+      spouseIds,
+      coupleCenterX,
+      centerY,
     };
   }, [
     member,
@@ -310,10 +295,9 @@ export default function MemberTreeScreen() {
     showFratrie,
     showConjoints,
     showEnfants,
-    compactMode,
-    dims,
     nodeWidth,
     nodeHeight,
+    mode,
   ]);
 
   const edges = useMemo(() => {
@@ -325,13 +309,13 @@ export default function MemberTreeScreen() {
       to: string;
     }> = [];
 
-    if (showParents) {
+    if (showParents && mode !== 'desc') {
       relations.parents.forEach((parent) => {
         result.push({ type: 'parent', from: parent._id, to: member._id });
       });
     }
 
-    if (showConjoints && relations.conjoints[0]) {
+    if (showConjoints && mode !== 'asc' && relations.conjoints[0]) {
       result.push({
         type: 'conjoint',
         from: member._id,
@@ -339,14 +323,14 @@ export default function MemberTreeScreen() {
       });
     }
 
-    if (showEnfants) {
+    if (showEnfants && mode !== 'asc') {
       relations.enfants.forEach((child) => {
         result.push({ type: 'child', from: member._id, to: child._id });
       });
     }
 
     return result;
-  }, [member, relations, showParents, showConjoints, showEnfants]);
+  }, [member, relations, showParents, showConjoints, showEnfants,mode]);
 
   const webWheelProps =
     Platform.OS === 'web'
@@ -386,38 +370,72 @@ export default function MemberTreeScreen() {
         showsHorizontalScrollIndicator={false}
         style={styles.filtersWrapper}
       >
-        <View style={styles.filtersRow}>
-          <FilterButton
-            label="Parents"
-            active={showParents}
-            onPress={() => setShowParents((prev) => !prev)}
-          />
-          <FilterButton
-            label="Fratrie"
-            active={showFratrie}
-            onPress={() => setShowFratrie((prev) => !prev)}
-          />
-          <FilterButton
-            label="Conjoints"
-            active={showConjoints}
-            onPress={() => setShowConjoints((prev) => !prev)}
-          />
-          <FilterButton
-            label="Enfants"
-            active={showEnfants}
-            onPress={() => setShowEnfants((prev) => !prev)}
-          />
-          <FilterButton
-            label="Compact"
-            active={compactMode}
-            onPress={() => setCompactMode((prev) => !prev)}
-          />
+        <View style={styles.filtersGroup}>
+          <Text style={styles.filterGroupTitle}>Relations affichées</Text>
+
+          <View style={styles.filtersRow}>
+            <FilterButton
+              label="Parents"
+              active={showParents}
+              onPress={() => setShowParents((prev) => !prev)}
+            />
+            <FilterButton
+              label="Fratrie"
+              active={showFratrie}
+              onPress={() => setShowFratrie((prev) => !prev)}
+            />
+            <FilterButton
+              label="Conjoints"
+              active={showConjoints}
+              onPress={() => setShowConjoints((prev) => !prev)}
+            />
+            <FilterButton
+              label="Enfants"
+              active={showEnfants}
+              onPress={() => setShowEnfants((prev) => !prev)}
+            />
+          </View>
+          <Text style={styles.filterGroupTitle}>Mode: </Text>
+          <View style={styles.filtersRow}>
+            <FilterButton
+              label="Tout"
+              active={mode === 'all'}
+              onPress={() => setMode('all')}
+            />
+
+            <FilterButton
+              label="Ascendants"
+              active={mode === 'asc'}
+              onPress={() => setMode('asc')}
+            />
+
+            <FilterButton
+              label="Descendants"
+              active={mode === 'desc'}
+              onPress={() => setMode('desc')}
+            />
+          </View>
+
+          <Text style={styles.filterGroupTitle}>Champs affichés</Text>
+          <View style={styles.filtersRow}>
+            <FilterButton
+              label="Date naissance"
+              active={showBirthDate}
+              onPress={() => setShowBirthDate((prev) => !prev)}
+            />
+            <FilterButton
+              label="Type relation"
+              active={showRelationType}
+              onPress={() => setShowRelationType((prev) => !prev)}
+            />
+          </View>
         </View>
       </ScrollView>
 
       <Text style={styles.legend}>
         Appui court : recentrer l’arbre • Appui long : ouvrir la fiche
       </Text>
+      
 
       <View style={styles.zoomControls}>
         <ZoomButton label="−" onPress={zoomOut} />
@@ -506,7 +524,6 @@ export default function MemberTreeScreen() {
                       activeOpacity={0.9}
                       style={[
                         styles.node,
-                        compactMode && styles.nodeCompact,
                         meta.kind === 'center' && styles.nodeCenter,
                         {
                           left: pos.x - nodeWidth / 2,
@@ -520,14 +537,20 @@ export default function MemberTreeScreen() {
                         numberOfLines={2}
                         style={[
                           styles.nodeName,
-                          compactMode && styles.nodeNameCompact,
                           meta.kind === 'center' && styles.nodeNameCenter,
                         ]}
                       >
                         {meta.person.prenom} {meta.person.nom}
                       </Text>
+                      {showBirthDate && (
+                        <Text style={styles.sub}>
+                          {meta.person.dateNaissance
+                            ? `Né le ${meta.person.dateNaissance}`
+                            : 'Date inconnue'}
+                        </Text>
+                      )}
 
-                      {!compactMode && (
+                      {showRelationType && (
                         <Text style={styles.nodeKind}>{kindLabel(meta.kind)}</Text>
                       )}
                     </TouchableOpacity>
@@ -597,7 +620,8 @@ const styles = StyleSheet.create({
   filtersRow: {
     flexDirection: 'row',
     gap: 10,
-    paddingBottom: 4,
+    flexWrap: 'wrap',
+    marginBottom: 8,
   },
   filterButton: {
     backgroundColor: '#F3F5F4',
@@ -618,6 +642,17 @@ const styles = StyleSheet.create({
   },
   filterButtonTextActive: {
     color: Colors.white,
+  },
+  filtersGroup: {
+    gap: 10,
+    paddingBottom: 4,
+  },
+
+  filterGroupTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.secondary,
+    marginBottom: 4,
   },
   legend: {
     fontSize: 13,
@@ -689,9 +724,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: '#F5FBF5',
   },
-  nodeCompact: {
-    borderRadius: 13,
-  },
   nodeName: {
     fontSize: 15,
     fontWeight: '700',
@@ -701,13 +733,38 @@ const styles = StyleSheet.create({
   nodeNameCenter: {
     fontSize: 17,
   },
-  nodeNameCompact: {
-    fontSize: 13,
-  },
   nodeKind: {
     marginTop: 6,
     fontSize: 11,
     color: Colors.secondary,
     textAlign: 'center',
   },
+  detailButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  detailButtonActive: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+
+  detailButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+
+  detailButtonTextActive: {
+    color: Colors.primary,
+  },
+  
 });

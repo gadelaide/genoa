@@ -21,13 +21,14 @@ Répartition des fonctionnalités:
 cd api
 npm install
 node server.js
+```
 
 ### Frontend
 ```bash
 cd ui/genoa
 npm install
 npx expo start
-
+```
 
 Variables d’environnement: 
 Créer un fichier .env dans api/ avec :
