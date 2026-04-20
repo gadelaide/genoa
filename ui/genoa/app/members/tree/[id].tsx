@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Svg, { Line } from 'react-native-svg';
+import dagre from 'dagre';
 
 import { getToken } from '../../../services/auth';
 import { API_BASE_URL } from '../../../config';
@@ -191,110 +192,101 @@ export default function MemberTreeScreen() {
       };
     }
 
-    const pos: NodePosition = {};
+    const g = new dagre.graphlib.Graph();
+    g.setGraph({
+      rankdir: 'TB',
+      ranksep: 120,
+      nodesep: 70,
+      marginx: 40,
+      marginy: 40,
+    });
+    g.setDefaultEdgeLabel(() => ({}));
+
     const meta: NodeMeta = {};
 
-    const centerY = BASE_CANVAS_HEIGHT / 2 - 40;
-    const canvasCenterX = BASE_CANVAS_WIDTH / 2;
-    const visibleConjoints = showConjoints ? relations.conjoints : [];
-    const firstSpouse = visibleConjoints[0] || null;
-
-    const hasSpouse = !!firstSpouse;
-    const coupleCenterX = canvasCenterX;
-
-    const centerMemberX = hasSpouse
-      ? coupleCenterX - dims.spouseGap / 2
-      : coupleCenterX;
-
-    pos[member._id] = { x: centerMemberX, y: centerY };
+    // membre central
+    g.setNode(member._id, { width: nodeWidth, height: nodeHeight });
     meta[member._id] = { person: member, kind: 'center' };
 
-    if (firstSpouse) {
-      pos[firstSpouse._id] = {
-        x: coupleCenterX + dims.spouseGap / 2,
-        y: centerY,
-      };
-      meta[firstSpouse._id] = { person: firstSpouse, kind: 'conjoint' };
-    }
-
-    if (showParents && mode !== 'desc' && relations.parents.length > 0) {
-      const totalWidth = (relations.parents.length - 1) * dims.parentGap;
-      const startX = centerMemberX - totalWidth / 2;
-
-      relations.parents.forEach((parent, index) => {
-        pos[parent._id] = {
-          x: startX + index * dims.parentGap,
-          y: centerY - dims.parentY,
-        };
+    // parents
+    if (showParents && mode !== 'desc') {
+      relations.parents.forEach((parent) => {
+        g.setNode(parent._id, { width: nodeWidth, height: nodeHeight });
+        g.setEdge(parent._id, member._id);
         meta[parent._id] = { person: parent, kind: 'parent' };
       });
     }
 
-    if (showFratrie && mode === 'all' && relations.fratrie.length > 0) {
-      const siblings = relations.fratrie;
-      const total = siblings.length;
+    // conjoint
+    const visibleConjoints =
+      showConjoints && mode !== 'asc' ? relations.conjoints : [];
 
-      siblings.forEach((sibling, index) => {
-        const isLeftSide = index % 2 === 0;
-        const rank = Math.floor(index / 2) + 1;
-        const offset = rank * dims.siblingGap;
+    visibleConjoints.forEach((conjoint) => {
+      g.setNode(conjoint._id, { width: nodeWidth, height: nodeHeight });
+      g.setEdge(member._id, conjoint._id);
+      meta[conjoint._id] = { person: conjoint, kind: 'conjoint' };
+    });
 
-        pos[sibling._id] = {
-          x: centerMemberX + (isLeftSide ? -offset : offset),
-          y: centerY,
-        };
-        meta[sibling._id] = { person: sibling, kind: 'sibling' };
-      });
-
-      if (total === 1) {
-        pos[siblings[0]._id].x = centerMemberX - dims.siblingGap;
-      }
-    }
-
-    if (showEnfants && mode !== 'asc' && relations.enfants.length > 0) {
-      const childrenCenterX = hasSpouse ? coupleCenterX : centerMemberX;
-      const totalWidth = (relations.enfants.length - 1) * dims.childGap;
-      const startX = childrenCenterX - totalWidth / 2;
-
-      relations.enfants.forEach((child, index) => {
-        pos[child._id] = {
-          x: startX + index * dims.childGap,
-          y: centerY + dims.childY,
-        };
+    // enfants
+    if (showEnfants && mode !== 'asc') {
+      relations.enfants.forEach((child) => {
+        g.setNode(child._id, { width: nodeWidth, height: nodeHeight });
+        g.setEdge(member._id, child._id);
         meta[child._id] = { person: child, kind: 'child' };
       });
     }
 
-    const xs = Object.values(pos).map((p) => p.x);
-    const ys = Object.values(pos).map((p) => p.y);
+    // fratrie
+    if (showFratrie && mode === 'all') {
+      relations.fratrie.forEach((sibling) => {
+        g.setNode(sibling._id, { width: nodeWidth, height: nodeHeight });
+        g.setEdge(member._id, sibling._id, { weight: 0.2 });
+        meta[sibling._id] = { person: sibling, kind: 'sibling' };
+      });
+    }
 
-    const minX = Math.min(...xs) - nodeWidth;
-    const maxX = Math.max(...xs) + nodeWidth;
-    const minY = Math.min(...ys) - nodeHeight;
-    const maxY = Math.max(...ys) + nodeHeight;
+    dagre.layout(g);
 
-    const contentWidth = Math.max(BASE_CANVAS_WIDTH, maxX - minX + 120);
-    const contentHeight = Math.max(BASE_CANVAS_HEIGHT, maxY - minY + 120);
+    const pos: NodePosition = {};
+    let maxX = 0;
+    let maxY = 0;
 
-    const offsetX = minX < 40 ? 40 - minX : 0;
-    const offsetY = minY < 40 ? 40 - minY : 0;
+    for (const nodeId of g.nodes() as string[]) {
+      const node = g.node(nodeId);
+      if (!node) continue;
 
-    Object.keys(pos).forEach((key) => {
-      pos[key] = {
-        x: pos[key].x + offsetX,
-        y: pos[key].y + offsetY,
-      };
-    });
+      pos[nodeId] = { x: node.x, y: node.y };
+
+      if (node.x > maxX) maxX = node.x;
+      if (node.y > maxY) maxY = node.y;
+    }
+
+    // dimensions du canvas
+    const width = Math.max(BASE_CANVAS_WIDTH, maxX + nodeWidth);
+    const height = Math.max(BASE_CANVAS_HEIGHT, maxY + nodeHeight);
+
+    const spouseIds = visibleConjoints.map((c) => c._id);
+
+    const centerNode = pos[member._id];
+    const firstSpouseId = spouseIds[0];
+    const firstSpouseNode = firstSpouseId ? pos[firstSpouseId] : null;
+
+    const coupleCenterX =
+      firstSpouseNode && centerNode
+        ? (centerNode.x + firstSpouseNode.x) / 2
+        : centerNode?.x || width / 2;
+
+    const centerY = centerNode?.y || height / 2;
 
     return {
       pos,
       meta,
-      width: contentWidth,
-      height: contentHeight,
+      width,
+      height,
       centerId: member._id,
-      spouseIds: firstSpouse ? [firstSpouse._id] : [],
-      coupleCenterX: coupleCenterX + offsetX,
-      centerY: centerY + offsetY,
+      spouseIds,
+      coupleCenterX,
+      centerY,
     };
   }, [
     member,
@@ -303,7 +295,6 @@ export default function MemberTreeScreen() {
     showFratrie,
     showConjoints,
     showEnfants,
-    dims,
     nodeWidth,
     nodeHeight,
     mode,
